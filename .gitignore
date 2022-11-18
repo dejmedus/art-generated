@@ -1,0 +1,6 @@
+config.py
+__pycache__
+hist.txt
+saved_hist.txt
+prompts.txt
+photos
