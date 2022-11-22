@@ -3,15 +3,21 @@ import webbrowser
 import requests
 from PIL import Image
 from datetime import datetime
-from config import API_Key, Org_ID, Number_of_Generations, Prompt, Array_of_Artists
+# from config import API_Key, Org_ID, Number_of_Generations, Prompt, Array_of_Artists
+from config import API_Key, Org_ID
 
 
 openai.organization = Org_ID
 openai.api_key = API_Key
 
-num = Number_of_Generations
-prompt = Prompt
-artist_arr = Array_of_Artists
+
+num = 4
+prompt="mushroom cave"
+artist_arr = ['Frederic Edwin Church']
+
+# num = Number_of_Generations
+# prompt = Prompt
+# artist_arr = Array_of_Artists
 
 date = datetime.now()
 yes = ['yes', 'y']

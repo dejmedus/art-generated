@@ -1,9 +1,23 @@
 config.py
-
-__pycache__
-.DS_Store
+.env
 
 hist.txt
 saved_hist.txt
 prompts.txt
 photos
+
+venv/
+
+*.pyc
+__pycache__/
+.DS_Store
+
+instance/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+dist/
+build/
+*.egg-info/
