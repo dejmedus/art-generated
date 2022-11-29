@@ -11,8 +11,8 @@ openai.organization = Org_ID
 openai.api_key = API_Key
 
 
-num = 4
-prompt="mushroom cave"
+num = 1
+prompt="ethereal princess and a brown bear in the woods"
 artist_arr = ['Frederic Edwin Church']
 
 # num = Number_of_Generations

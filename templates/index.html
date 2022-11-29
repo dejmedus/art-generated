@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block head %}
+  <title>homepage</title>
+{% endblock %}
+
+{% block body %}
+  {% if imageSrc %}
+    <img src={{ imageSrc }} alt='generated image' />
+    <p>{{ prompt }}!</p>
+    <form action="/history" method="post">
+      <button type="submit" name="save">save image</button>
+      <button type="submit" name="cancel">delete image</button>
+    </form>
+  {% elif prompt %}
+    <h2>{{ prompt }}</h2>
+  {% endif %}
+
+
+  <h2>Generate an image</h2>
+  <form action="/" method="post">
+    <label for="prompt">prompt</label>
+    <input type="text" name="prompt" id="prompt">
+
+    <label for="movement">movement</label>
+    <input type="text" name="movement" id="movement">
+
+    <button type="submit">Generate</button>
+  </form>
+
+{% endblock %}

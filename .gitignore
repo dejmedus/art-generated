@@ -7,6 +7,7 @@ prompts.txt
 photos
 
 venv/
+flasknotes.md
 
 *.pyc
 __pycache__/
