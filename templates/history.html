@@ -10,14 +10,23 @@
 <table>
     {% for row in data %}
     <tr>
-        <td><h3>{{ row.date.strftime("%d/%m/%y") }}</h3></td>
-        <td class="row-prompt"><h3>{{ row.prompt }}</h3></td>
+        <td>
+            <h3>{{ row.date.strftime("%d/%m/%y") }}</h3>
+        </td>
+        <td class="row-prompt">
+            <h3>{{ row.prompt }}</h3>
+        </td>
         <td>
             <img class='generate_image' src="{{ src }}{{ row.image }}" alt='generated image' />
         </td>
         <td>
             <form action="/delete/{{ row.id }}" method="post">
                 <button type="submit">delete</button>
+            </form>
+        </td>
+        <td>
+            <form action="/download/{{ row.id }}" method="post">
+                <button type="submit">\/</button>
             </form>
         </td>
     </tr>
