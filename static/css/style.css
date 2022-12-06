@@ -19,13 +19,12 @@ body {
   flex-direction: column;
 }
 
-label,
-button {
-  color: var(--text-secondary);
-}
 h2 {
-  color: var(--text-secondary);
+  color: var(--text);
   margin-bottom: 4em;
+  font-weight: 400;
+}
+h3 {
   font-weight: 400;
 }
 
@@ -33,8 +32,10 @@ label {
   width: 6em;
   font-size: 1.5em;
   align-self: center;
+  color: var(--text);
 }
 input {
+  color: var(--text-secondary);
   padding: 0.4em 1em;
   width: 40vw;
   border: none;
@@ -58,6 +59,7 @@ fieldset {
   line-height: 1.5em;
 }
 button {
+  color: var(--text-secondary);
   width: 8em;
   border: 1px solid var(--text);
   background-color: var(--bg-secondary);
@@ -68,6 +70,23 @@ button {
 }
 button:hover {
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+table {
+  display: grid;
+  gap: 2em;
+}
+tr {
+  padding: 2em;
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+tr .row-prompt {
+  flex: 1;
+}
+tr:nth-of-type(2n) {
+  background-color: rgb(243, 243, 243);
 }
 footer {
   padding: 1.5% 6%;
@@ -81,12 +100,19 @@ footer img {
   width: 24px;
   height: auto;
 }
-a {
+footer a {
   color: white;
+}
+a {
+  color: var(--text-secondary);
   text-decoration: none;
 }
 a:hover {
   text-decoration: underline;
+}
+::selection {
+  color: var(--text-secondary);
+  background: rgb(249, 247, 238);
 }
 
 .container {

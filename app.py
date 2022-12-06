@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, session, redirect
 # from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from datetime import datetime
+import base64
 
 import openai
 
@@ -10,21 +12,24 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///picas.db"
 db.init_app(app)
 
+migrate = Migrate(app, db)
+
 # load_dotenv()
-from config import API_Key, Org_ID
+from config import API_Key, Org_ID, Secret_Key
 
 openai.organization = Org_ID
 openai.api_key = API_Key
+app.secret_key = Secret_Key
 
 # movement_arr = [
     # 'art deco, René Lalique, Jean Dunand, Émile-Jacques Ruhlmann'
     # , 'abstract art', 'art nouveau', 'baroque', 'constructivism', 'cubism', 'digital art', 'expressionism', 'fauvism', 'figurative art', 'folk art, by Ammi Phillips', 'funk art', 'futurism', 'graffiti art', 'gothic', 'geometric', 'hyperrealism', 'impressionism', 'kitsch', 'pop art', 'pre-raphaelitism', 'primitivism', 'purism', 'pointillism', 'photorealism', 'psychedelic art', 'renaissance', 'realism', 'rococo', 'romanticism']
-
+    
 class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, default=datetime.utcnow)
-    prompt = db.Column(db.String, unique=True, nullable=False)
-    image = db.Column(db.LargeBinary, nullable=True)
+    prompt = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
     
 with app.app_context():
     db.create_all()
@@ -32,6 +37,8 @@ with app.app_context():
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    current_prompt = None
+    image_src = None
     
     # if request is made
     print('REQUEST MADE')
@@ -51,6 +58,18 @@ def index():
                 )
                 image_data = response['data'][0]['b64_json']
                 image_src = f'data:image/png;base64,{image_data}'
+                
+                print('save image to database')
+                add_to_db = History(
+                    prompt=current_prompt,
+                    image=image_data
+                )
+                db.session.add(add_to_db)
+                db.session.commit()
+                
+                print('save images database id as session cookie') 
+                session['image_id'] = add_to_db.id
+
             except openai.error.OpenAIError as e:
                   print(e.http_status)
                   print(e.error)
@@ -61,24 +80,48 @@ def index():
                 cancel_data = request.form.get('cancel', None)
                 if save_data != None:
                     print('save image')
-                    add_to_db = History(
-                        prompt=current_prompt,
-                        image=image_data
-                    )
-                    db.session.add(add_to_db)
-                    db.session.commit()
+                    # save image
+                    query = History.query.get(session['image_id'])
+                    with open(f"photos/{query.prompt}{query.id}.png", "wb") as image:
+                        # image.write(base64.decodebytes(query.image))
+                        # image.write(decodestring(query.image))
+                        image.write(base64.urlsafe_b64decode(query.image))
 
                 elif cancel_data != None:
                     print('cancel image')
+                    # get image from database by querying its id
+                    #   stored as a session cookie
+                    query = History.query.get(session['image_id'])
+                    # delete image from database
+                    db.session.delete(query)
+                    db.session.commit()
                     
             except Exception as e:
                 print('ERROR db')
                 print(e)
-    else:
-        current_prompt = None
-        image_src = None
                    
-    saved_images = History.query.order_by(History.date).all()
-    print(saved_images)
+    # old way: saved_images = History.query.order_by(History.date).all() 
+    # new way: saved_images = db.session.execute(db.select(History).order_by(History.date)).scalars()
     return render_template('index.html', image_src=image_src, prompt=current_prompt)
 
+@app.route("/history", methods=['GET', 'POST'])
+def history():
+    data = db.session.execute(db.select(History).order_by(History.date.desc())).scalars()  
+    src = 'data:image/png;base64,'
+    
+    return render_template('history.html', src=src, data=data)
+
+@app.route("/delete/<int:id>", methods=['GET', 'POST'])
+def delete(id):
+    try:
+        data = db.get_or_404(History, id)
+        print(data)
+        db.session.delete(data)
+        db.session.commit()
+    except:
+        print(f'ERROR deleting data row {id}')
+        
+    data = db.session.execute(db.select(History).order_by(History.date.desc())).scalars()
+    src = 'data:image/png;base64,'
+    
+    return render_template('history.html', src=src, data=data)

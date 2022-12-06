@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block head %}
+<title>history</title>
+{% endblock %}
+
+{% block body %}
+{% if data %}
+<a href="{{url_for('index')}}">homepage</a>
+<h2>image history</h2>
+<table>
+    {% for row in data %}
+    <tr>
+        <td><h3>{{ row.date.strftime("%d/%m/%y") }}</h3></td>
+        <td class="row-prompt"><h3>{{ row.prompt }}</h3></td>
+        <td>
+            <img class='generate_image' src="{{ src }}{{ row.image }}" alt='generated image' />
+        </td>
+        <td>
+            <form action="/delete/{{ row.id }}" method="post">
+                <button type="submit">delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<a href="{{url_for('index')}}">Generate Images</a>
+{% endif %}
+{% endblock %}
