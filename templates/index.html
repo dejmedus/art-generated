@@ -1,30 +1,40 @@
 {% extends 'base.html' %}
 {% block head %}
-  <title>homepage</title>
+<title>homepage</title>
 {% endblock %}
 
+
 {% block body %}
-  {% if imageSrc %}
-    <img src={{ imageSrc }} alt='generated image' />
-    <p>{{ prompt }}!</p>
-    <form action="/history" method="post">
-      <button type="submit" name="save">save image</button>
-      <button type="submit" name="cancel">delete image</button>
-    </form>
-  {% elif prompt %}
-    <h2>{{ prompt }}</h2>
-  {% endif %}
-
-
-  <h2>Generate an image</h2>
-  <form action="/" method="post">
-    <label for="prompt">prompt</label>
-    <input type="text" name="prompt" id="prompt">
-
-    <label for="movement">movement</label>
-    <input type="text" name="movement" id="movement">
-
-    <button type="submit">Generate</button>
+<div class="container">
+  {% if image_src %}
+  <h2>{{prompt}}</h2>
+  <img class='generate_image' src={{ image_src }} alt='generated image' />
+  <form class='db-form' action="/" method="post">
+    <button type="submit" name="save">save</button>
+    <button type="submit" name="cancel">delete</button>
   </form>
+  {% elif prompt %}
+  <h2>{{ prompt }}</h2>
+  {% else %}
+  <h2>Generate an image</h2>
+  <form class='generate-form' action="/" method="post">
+    <fieldset>
+      <label for="prompt">prompt:</label>
+      <input type="text" name="prompt" id="prompt">
+    </fieldset>
+    <fieldset>
+      <label for="movement">movement:</label>
+      <input type="text" name="movement" id="movement">
+    </fieldset>
+    <button type="submit" name="generate_image">Generate</button>
+  </form>
+  {% endif %}
+</div>
+<footer>
+  <a class="link-pair" href="'https://www.github.com/dejmedus">
+    Open Source Project
+    <img src={{url_for('static', filename='images/code.png' )}} alt="code symbol magnified">
+  </a>
+</footer>
 
 {% endblock %}
