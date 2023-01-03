@@ -68,6 +68,10 @@ button {
   font-size: 1.2em;
   margin-top: 1em;
 }
+button .icon {
+  padding: 0.4em;
+}
+
 button:hover {
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }

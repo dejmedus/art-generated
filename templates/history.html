@@ -21,12 +21,12 @@
         </td>
         <td>
             <form action="/delete/{{ row.id }}" method="post">
-                <button type="submit">delete</button>
+                <button class="icon" type="submit"><img src="{{ delete_img }}"></button>
             </form>
         </td>
         <td>
             <form action="/download/{{ row.id }}" method="post">
-                <button type="submit">\/</button>
+                <button class="icon" type="submit"><img src="{{ download_img }}"></button>
             </form>
         </td>
     </tr>

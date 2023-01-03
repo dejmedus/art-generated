@@ -1,7 +1,6 @@
 from config import API_Key, Org_ID, Secret_Key
 from flask import Flask, render_template, request, session
 import openai
-# from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
@@ -17,15 +16,10 @@ db.init_app(app)
 
 migrate = Migrate(app, db)
 
-# load_dotenv()
 
 openai.organization = Org_ID
 openai.api_key = API_Key
 app.secret_key = Secret_Key
-
-# movement_arr = [
-# 'art deco, René Lalique, Jean Dunand, Émile-Jacques Ruhlmann'
-# , 'abstract art', 'art nouveau', 'baroque', 'constructivism', 'cubism', 'digital art', 'expressionism', 'fauvism', 'figurative art', 'folk art, by Ammi Phillips', 'funk art', 'futurism', 'graffiti art', 'gothic', 'geometric', 'hyperrealism', 'impressionism', 'kitsch', 'pop art', 'pre-raphaelitism', 'primitivism', 'purism', 'pointillism', 'photorealism', 'psychedelic art', 'renaissance', 'realism', 'rococo', 'romanticism']
 
 
 class History(db.Model):
@@ -84,7 +78,6 @@ def index():
                 cancel_data = request.form.get('cancel', None)
                 rerun_data = request.form.get('rerun', None)
                 if save_data != None:
-                    print('save image')
                     # save image
                     query = History.query.get(session['image_id'])
                     with open(f"photos/{query.prompt}{query.id}.png", "wb") as image:
@@ -115,11 +108,13 @@ def index():
 
 @app.route("/history", methods=['GET', 'POST'])
 def history():
+    delete_img = './static/images/trash.svg'
+    download_img = './static/images/download.svg'
     data = db.session.execute(
         db.select(History).order_by(History.date.desc())).scalars()
     src = 'data:image/png;base64,'
 
-    return render_template('history.html', src=src, data=data)
+    return render_template('history.html', src=src, data=data, delete_img=delete_img, download_img=download_img)
 
 
 @app.route("/delete/<int:id>", methods=['GET', 'POST'])

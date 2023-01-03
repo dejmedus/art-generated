@@ -9,6 +9,7 @@ photos
 venv/
 migrations/
 flasknotes.md
+main.py
 
 *.pyc
 __pycache__/
