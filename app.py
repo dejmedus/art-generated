@@ -1,5 +1,5 @@
 from config import API_Key, Org_ID, Secret_Key
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, redirect, url_for
 import openai
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -39,7 +39,6 @@ def index():
     image_src = None
 
     # if request is made
-    print('REQUEST MADE')
     if request.method == "POST":
         if 'generate_image' in request.form:
             prompt = request.form["prompt"]
@@ -47,7 +46,7 @@ def index():
             current_prompt = f'{prompt}, {movement}'
 
             try:
-                print('CREATE IMAGE')
+                # create image
                 response = openai.Image.create(
                     prompt=current_prompt,
                     n=1,
@@ -57,7 +56,7 @@ def index():
                 image_data = response['data'][0]['b64_json']
                 image_src = f'data:image/png;base64,{image_data}'
 
-                print('save image to database')
+                # save image to db
                 add_to_db = History(
                     prompt=current_prompt,
                     image=image_data
@@ -65,7 +64,7 @@ def index():
                 db.session.add(add_to_db)
                 db.session.commit()
 
-                print('save images database id as session cookie')
+                # save image db id as session cookie
                 session['image_id'] = add_to_db.id
 
             except openai.error.OpenAIError as e:
@@ -73,7 +72,6 @@ def index():
                 print(e.error)
         else:
             try:
-                print('SAVE OR CANCEL')
                 save_data = request.form.get('save', None)
                 cancel_data = request.form.get('cancel', None)
                 rerun_data = request.form.get('rerun', None)
@@ -84,16 +82,15 @@ def index():
                         image.write(base64.urlsafe_b64decode(query.image))
 
                 elif cancel_data != None:
-                    print('cancel image')
                     # get image from database by querying its id
-                    #   stored as a session cookie
+                    # stored as a session cookie
                     query = History.query.get(session['image_id'])
                     # delete image from database
                     db.session.delete(query)
                     db.session.commit()
 
                 elif rerun_data != None:
-                    print('generate again - not set up yet')
+                    # regenerate prompt
                     query = History.query.get(session['image_id'])
                     # rerun prompt
 
@@ -101,8 +98,6 @@ def index():
                 print('ERROR db')
                 print(e)
 
-    # old way: saved_images = History.query.order_by(History.date).all()
-    # new way: saved_images = db.session.execute(db.select(History).order_by(History.date)).scalars()
     return render_template('index.html', image_src=image_src, prompt=current_prompt)
 
 
@@ -121,37 +116,29 @@ def history():
 def delete(id):
     try:
         data = db.get_or_404(History, id)
-        print(data)
+
         db.session.delete(data)
         db.session.commit()
     except:
         print(f'ERROR deleting data row {id}')
 
-    data = db.session.execute(
-        db.select(History).order_by(History.date.desc())).scalars()
-    src = 'data:image/png;base64,'
-
-    return render_template('history.html', src=src, data=data)
+    return redirect(url_for('history'))
 
 
 @app.route("/download/<int:id>", methods=['GET', 'POST'])
 def download(id):
     try:
-        print('download image')
+        # print('download image')
+        # download image
         data = db.get_or_404(History, id)
         path = path_name(data)
-        print(path)
         with open(path, 'wb') as image:
             image.write(base64.urlsafe_b64decode(data.image))
 
     except:
         print(f'ERROR downloading data row {id}')
 
-    data = db.session.execute(
-        db.select(History).order_by(History.date.desc())).scalars()
-    src = 'data:image/png;base64,'
-
-    return render_template('history.html', src=src, data=data)
+    return redirect(url_for('history'))
 
 
 def path_name(data):
