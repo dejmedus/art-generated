@@ -21,6 +21,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 db.init_app(app)
 
 # initialize flask-migrate with the application instance (app) and the Flask-SQLAlchemy database instance (db)
+
 migrate = Migrate(app, db)
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -37,6 +38,7 @@ class History(db.Model):
 
 
 # create the table schema in the database
+# create_all does not update tables, we use flask-migrate if the model changes
 with app.app_context():
     db.create_all()
 
