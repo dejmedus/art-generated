@@ -6,6 +6,25 @@
   --text-secondary: rgb(70, 70, 70);
 
   --accent: rgb(81, 107, 92);
+  --accent-secondary: rgb(243, 243, 243);
+
+  --icon: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: rgb(20, 20, 20);
+    --bg-secondary: rgb(50, 50, 50);
+
+    --text: rgb(224, 224, 224);
+    --text-secondary: rgb(251, 251, 251);
+
+    --accent: rgb(113, 139, 124);
+    --accent-secondary: rgb(25, 25, 25);
+
+    --icon: invert(100%) sepia(0%) saturate(0%) hue-rotate(131deg)
+      brightness(103%) contrast(103%);
+  }
 }
 * {
   margin: 0;
@@ -50,7 +69,7 @@ input {
 input:focus {
   outline: none;
   border-bottom: 2px solid var(--accent);
-  box-shadow: 0 2px 0 var(--accent);
+  box-shadow: 0 6px 0 var(--accent);
 }
 fieldset {
   border: none;
@@ -59,7 +78,7 @@ fieldset {
   line-height: 1.5em;
 }
 button {
-  color: var(--text-secondary);
+  color: var(--text);
   width: 8em;
   border: 1px solid var(--text);
   background-color: var(--bg-secondary);
@@ -71,9 +90,14 @@ button {
 button .icon {
   padding: 0.4em;
 }
+button img {
+  filter: var(--icon);
+}
 
 button:hover {
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
 table {
   display: grid;
@@ -85,27 +109,17 @@ tr {
   display: flex;
   align-items: center;
   gap: 1em;
+  color: var(--text);
 }
 tr .row-prompt {
   flex: 1;
 }
 tr:nth-of-type(2n) {
-  background-color: rgb(243, 243, 243);
+  background-color: var(--accent-secondary);
 }
 footer {
-  padding: 1.5% 6%;
-  border-top: 2px solid var(--text);
-  background-color: rgb(64, 64, 64);
-  justify-items: center;
-  align-items: center;
-  justify-content: center;
-}
-footer img {
-  width: 24px;
-  height: auto;
-}
-footer a {
-  color: white;
+  height: 4vh;
+  background-color: var(--accent);
 }
 a {
   color: var(--text-secondary);
