@@ -11,12 +11,16 @@ from datetime import datetime
 import os
 import re
 
-
+# create the extension
 db = SQLAlchemy()
+# create the app
 app = Flask(__name__)
+# configure the SQLite database, relative to the app instance folder
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+# initialize the app with the extension
 db.init_app(app)
 
+# initialize flask-migrate with the application instance (app) and the Flask-SQLAlchemy database instance (db)
 migrate = Migrate(app, db)
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -24,6 +28,7 @@ openai.organization = os.getenv("OPENAI_ORG_ID")
 app.secret_key = os.getenv("KEY")
 
 
+# define a model class
 class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -31,6 +36,7 @@ class History(db.Model):
     image = db.Column(db.String, nullable=False)
 
 
+# create the table schema in the database
 with app.app_context():
     db.create_all()
 
@@ -40,15 +46,15 @@ def index():
     current_prompt = None
     image_src = None
 
-    # if request is made
     if request.method == "POST":
+        # create image with generate image form data
         if 'generate_image' in request.form:
             prompt = request.form["prompt"]
             movement = request.form['movement']
             current_prompt = f'{prompt}, {movement}'
 
             try:
-                # create image
+                # create image with DALLE
                 response = openai.Image.create(
                     prompt=current_prompt,
                     n=1,
@@ -63,7 +69,9 @@ def index():
                     prompt=current_prompt,
                     image=image_data
                 )
+                # add image to the session
                 db.session.add(add_to_db)
+                # commit and insert image into the database
                 db.session.commit()
 
                 # save image db id as session cookie
@@ -72,33 +80,32 @@ def index():
             except openai.error.OpenAIError as e:
                 print(e.http_status)
                 print(e.error)
+
         else:
-            try:
-                save_data = request.form.get('save', None)
-                cancel_data = request.form.get('cancel', None)
-                rerun_data = request.form.get('rerun', None)
-                if save_data != None:
-                    # save image
-                    query = History.query.get(session['image_id'])
-                    with open(f"photos/{query.prompt}{query.id}.png", "wb") as image:
-                        image.write(base64.urlsafe_b64decode(query.image))
+            # clicked button of type='submit' will be named either 'save', 'cancel', or 'rerun' - others are set to None
+            # save goes straight to the Homepage create image form
+            # cancel, or re-run queries the database
+            save_data = request.form.get('save', None)
+            cancel_data = request.form.get('cancel', None)
+            rerun_data = request.form.get('rerun', None)
 
-                elif cancel_data != None:
-                    # get image from database by querying its id
-                    # stored as a session cookie
-                    query = History.query.get(session['image_id'])
-                    # delete image from database
-                    db.session.delete(query)
-                    db.session.commit()
+            if save_data == None:
+                try:
+                    # get image from database by querying its id, which is stored as session cookie
+                    query = query_image(session['image_id'])
 
-                elif rerun_data != None:
-                    # regenerate prompt
-                    query = History.query.get(session['image_id'])
-                    # rerun prompt
+                    if cancel_data != None:
+                        # delete image from database
+                        db.session.delete(query)
+                        db.session.commit()
 
-            except Exception as e:
-                print('ERROR db')
-                print(e)
+                    # elif rerun_data != None:
+                        # regenerate prompt
+                        # rerun prompt
+
+                except Exception as e:
+                    print('ERROR db')
+                    print(e)
 
     return render_template('index.html', image_src=image_src, prompt=current_prompt)
 
@@ -117,7 +124,7 @@ def history():
 @app.route("/delete/<int:id>", methods=['GET', 'POST'])
 def delete(id):
     try:
-        data = db.get_or_404(History, id)
+        data = query_image(session['image_id'])
 
         db.session.delete(data)
         db.session.commit()
@@ -131,7 +138,7 @@ def delete(id):
 def download(id):
     try:
         # download image
-        data = db.get_or_404(History, id)
+        data = query_image(session['image_id'])
         path = path_name(data)
         with open(path, 'wb') as image:
             image.write(base64.urlsafe_b64decode(data.image))
@@ -147,10 +154,10 @@ def path_name(data):
     download_folder = None
     operating_system = os.name
 
-    # if MacOS/Linux
+    # MacOS/Linux
     if operating_system == 'posix':
         download_folder = f"{os.getenv('HOME')}/Downloads"
-    # else if Windows
+    # Windows
     else:
         download_folder = f"{os.getenv('USERPROFILE')}\Downloads"
 
@@ -159,3 +166,9 @@ def path_name(data):
     prompt = re.sub('[!,./+=?]+', '', prompt)
 
     return f"{download_folder}/{prompt}[{data.id}]"
+
+
+# return exactly one scalar result (the image with id of image_id) or raise an exception
+def query_image(image_id):
+    return db.session.execute(db.select(History).filter_by(
+        id=image_id)).scalar_one()
