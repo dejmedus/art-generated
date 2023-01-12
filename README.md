@@ -54,7 +54,7 @@ OPENAI_ORG_ID='<your organization>'
 flask db init
 flask db migrate -m "Initial migration."
 ```
-> When changes are made to the database, run ```flask db upgrade```<sup>[1](https://flask-migrate.readthedocs.io/en/latest/)</sup>
+> When changes are made to the database model, run ```flask db upgrade```<sup>[1](https://flask-migrate.readthedocs.io/en/latest/)</sup>
 9.   Run the app
 ```
 flask --debug run
@@ -64,13 +64,13 @@ flask --debug run
 
 ### Screenshots
 <details><summary>Homepage</summary>
-<img width="1274" alt="homepage" src="https://user-images.githubusercontent.com/59973863/210313971-351f0c34-04a3-4f0d-8988-c588dbd05dd8.png">
+<img width="1280" alt="homepage" src="https://user-images.githubusercontent.com/59973863/211992466-7df0be36-0d65-460e-9ad4-3b9ec266efb0.png">
 </details>
 
 <details><summary>Generated Image</summary>
-<img width="1280" alt="generated image page" src="https://user-images.githubusercontent.com/59973863/210314009-bddd5794-8594-4d81-9635-df5636d86c95.png">
+<img width="1280" alt="image" src="https://user-images.githubusercontent.com/59973863/211992507-9d02d8ed-9d51-4f43-a8b9-4bd85031ae3f.png">
 </details>
 
 <details><summary>Image History</summary>
-<img width="1280" alt="image history" src="https://user-images.githubusercontent.com/59973863/210314188-53812a2a-7768-40eb-bc07-119a75d557c2.png">
+<img width="1280" alt="history" src="https://user-images.githubusercontent.com/59973863/211992574-3c955b28-bc5c-46ef-a207-7c819e7a870a.png">
 </details>
