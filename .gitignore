@@ -1,15 +1,7 @@
-config.py
 .env
-
-hist.txt
-saved_hist.txt
-prompts.txt
-photos
 
 venv/
 migrations/
-flasknotes.md
-main.py
 
 *.pyc
 __pycache__/
