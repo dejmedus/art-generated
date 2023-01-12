@@ -24,6 +24,7 @@ Flask app to generate images with the OpenAI [DALL·E Images API](https://openai
 ```
 cd art-generated
 ```
+> 🚨 Flask installed globally can cause 'Module not found' errors inside the venv. Consider ```pip3 uninstall flask```
 4. Create a [virtual environment](https://docs.python.org/3/library/venv.html#module-venv)
    
 *MacOS/Linux*
