@@ -49,21 +49,17 @@ mv .env-copy .env
 OPENAI_API_KEY='<your api key>'
 OPENAI_ORG_ID='<your organization>'
 ```
-8. Generate [secret key](https://docs.python.org/3/library/secrets.html) for sessions in .env
-```
-KEY='<your secret key>'
-```
-9. Create initial database migration
+8. Create initial database migration
 ```
 flask db init
 flask db migrate -m "Initial migration."
 ```
 > When changes are made to the database, run ```flask db upgrade```<sup>[1](https://flask-migrate.readthedocs.io/en/latest/)</sup>
-10.  Run the app
+9.   Run the app
 ```
 flask --debug run
 ```
-You should now be able to generate images on the [browser!](http://localhost:5000) 🎉
+10. Generate images on the [browser!](http://localhost:5000) 🎉
 
 
 ### Screenshots
