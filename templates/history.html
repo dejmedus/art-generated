@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block head %}
-<title>history</title>
+<title>Art Generated - History</title>
 {% endblock %}
 
 {% block body %}
@@ -21,12 +21,12 @@
         </td>
         <td>
             <form action="/delete/{{ row.id }}" method="post">
-                <button class="icon" type="submit"><img src="{{ delete_img }}"></button>
+                <button class="icon" type="submit"><img src="{{ delete_img }}" alt="delete"></button>
             </form>
         </td>
         <td>
             <form action="/download/{{ row.id }}" method="post">
-                <button class="icon" type="submit"><img src="{{ download_img }}"></button>
+                <button class="icon" type="submit"><img src="{{ download_img }}" alt="download"></button>
             </form>
         </td>
     </tr>
