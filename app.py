@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for
 
 import openai
 import base64
@@ -43,71 +43,49 @@ with app.app_context():
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    current_prompt = None
-    image_src = None
-
     if request.method == "POST":
         # create image with generate image form data
-        if 'generate_image' in request.form:
-            prompt = request.form["prompt"]
-            movement = request.form['movement']
-            current_prompt = f'{prompt}, {movement}'
+        prompt = f'{request.form["prompt"]}, {request.form["movement"]}'
 
-            try:
-                # create image with DALLE
-                response = openai.Image.create(
-                    prompt=current_prompt,
-                    n=1,
-                    size="256x256",
-                    response_format='b64_json'
-                )
-                image_data = response['data'][0]['b64_json']
-                image_src = f'data:image/png;base64,{image_data}'
+        # generate_image takes in a prompt, generates an image, saves image to db
+        # and returns an object with keys id and image
+        generated = generate_image(prompt)
 
-                # save image to db
-                add_to_db = History(
-                    prompt=current_prompt,
-                    image=image_data
-                )
-                # add image to the session
-                db.session.add(add_to_db)
-                # commit and insert image into the database
+        return render_template('index.html', image_src=generated["image"], prompt=prompt, image_id=generated["id"])
+
+    return render_template('index.html', image_src=None, prompt=None, image_id=None)
+
+
+@app.route("/image/<int:id>", methods=['GET', 'POST'])
+def image(id):
+    # clicked button of type='submit' will be named either 'return', 'cancel', or 'rerun' - others are set to None
+    # return_to_homepage goes straight to the Homepage create image form
+    # cancel, or re-run queries the database
+    return_to_homepage = request.form.get('return', None)
+    cancel_data = request.form.get('cancel', None)
+    rerun_data = request.form.get('rerun', None)
+
+    if return_to_homepage == None:
+        try:
+            query = query_image(id)
+
+            if cancel_data != None:
+                # delete image from database
+                db.session.delete(query)
                 db.session.commit()
 
-                # save image db id as session cookie
-                session['image_id'] = add_to_db.id
+            elif rerun_data != None:
+                # rerun prompt, generate_image returns dict with image and id
+                generated = generate_image(query.prompt)
+                print(generated)
 
-            except openai.error.OpenAIError as e:
-                print(e.http_status)
-                print(e.error)
+                return render_template('index.html', image_src=generated["image"], prompt=query.prompt, image_id=generated["id"])
 
-        else:
-            # clicked button of type='submit' will be named either 'save', 'cancel', or 'rerun' - others are set to None
-            # save goes straight to the Homepage create image form
-            # cancel, or re-run queries the database
-            save_data = request.form.get('save', None)
-            cancel_data = request.form.get('cancel', None)
-            rerun_data = request.form.get('rerun', None)
+        except Exception as e:
+            print('ERROR in route /image')
+            print(e)
 
-            if save_data == None:
-                try:
-                    # get image from database by querying its id, which is stored as session cookie
-                    query = query_image(session['image_id'])
-
-                    if cancel_data != None:
-                        # delete image from database
-                        db.session.delete(query)
-                        db.session.commit()
-
-                    # elif rerun_data != None:
-                        # regenerate prompt
-                        # rerun prompt
-
-                except Exception as e:
-                    print('ERROR db')
-                    print(e)
-
-    return render_template('index.html', image_src=image_src, prompt=current_prompt)
+    return redirect(url_for('index'))
 
 
 @app.route("/history", methods=['GET', 'POST'])
@@ -124,12 +102,13 @@ def history():
 @app.route("/delete/<int:id>", methods=['GET', 'POST'])
 def delete(id):
     try:
-        data = query_image(session['image_id'])
+        data = query_image(id)
 
         db.session.delete(data)
         db.session.commit()
-    except:
+    except Exception as e:
         print(f'ERROR deleting data row {id}')
+        print(e)
 
     return redirect(url_for('history'))
 
@@ -138,13 +117,14 @@ def delete(id):
 def download(id):
     try:
         # download image
-        data = query_image(session['image_id'])
+        data = query_image(id)
         path = path_name(data)
         with open(path, 'wb') as image:
             image.write(base64.urlsafe_b64decode(data.image))
 
-    except:
+    except Exception as e:
         print(f'ERROR downloading data row {id}')
+        print(e)
 
     return redirect(url_for('history'))
 
@@ -172,3 +152,37 @@ def path_name(data):
 def query_image(image_id):
     return db.session.execute(db.select(History).filter_by(
         id=image_id)).scalar_one()
+
+
+def generate_image(current_prompt):
+    try:
+        # create image with DALLE
+        response = openai.Image.create(
+            prompt=current_prompt,
+            n=1,
+            size="256x256",
+            response_format='b64_json'
+        )
+        image_data = response['data'][0]['b64_json']
+        image_src = f'data:image/png;base64,{image_data}'
+
+        # save image to db
+        add_to_db = History(
+            prompt=current_prompt,
+            image=image_data
+        )
+        # add image to the session
+        db.session.add(add_to_db)
+        # commit and insert image into the database
+        db.session.commit()
+
+        image_id = add_to_db.id
+
+    except openai.error.OpenAIError as e:
+        print(e.http_status)
+        print(e.error)
+
+    return {
+        "id": image_id,
+        "image": image_src
+    }

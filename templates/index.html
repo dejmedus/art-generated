@@ -8,8 +8,8 @@
 {% if image_src %}
 <h2>{{prompt}}</h2>
 <img class='generate_image' src={{ image_src }} alt='generated image' />
-<form class='db-form' action="/" method="post">
-  <button type="submit" name="save">save</button>
+<form class='db-form' action="/image/{{ image_id }}" method="post">
+  <button type="submit" name="return">return</button>
   <button type="submit" name="cancel">delete</button>
   <button type="submit" name="rerun">run again</button>
 </form>
