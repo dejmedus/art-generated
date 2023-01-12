@@ -53,7 +53,7 @@ OPENAI_ORG_ID='<your organization>'
 ```
 KEY='<your secret key>'
 ```
-9. Migrate the database
+9. Create initial database migration
 ```
 flask db init
 flask db migrate -m "Initial migration."
