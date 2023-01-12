@@ -1,25 +1,27 @@
-from config import API_Key, Org_ID, Secret_Key
 from flask import Flask, render_template, request, session, redirect, url_for
+
 import openai
+import base64
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
-import base64
+
+# os: get operating system / re: regex out unwanted name chars
 import os
 import re
 
 
 db = SQLAlchemy()
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///picas.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 db.init_app(app)
 
 migrate = Migrate(app, db)
 
-
-openai.organization = Org_ID
-openai.api_key = API_Key
-app.secret_key = Secret_Key
+openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.organization = os.getenv("OPENAI_ORG_ID")
+app.secret_key = os.getenv("KEY")
 
 
 class History(db.Model):
@@ -128,7 +130,6 @@ def delete(id):
 @app.route("/download/<int:id>", methods=['GET', 'POST'])
 def download(id):
     try:
-        # print('download image')
         # download image
         data = db.get_or_404(History, id)
         path = path_name(data)
@@ -141,14 +142,19 @@ def download(id):
     return redirect(url_for('history'))
 
 
+# return download path
 def path_name(data):
     download_folder = None
+    operating_system = os.name
 
-    if os.name == 'posix':
+    # if MacOS/Linux
+    if operating_system == 'posix':
         download_folder = f"{os.getenv('HOME')}/Downloads"
-    # else:
-    #     download_folder = f"{os.getenv('USERPROFILE')}\\Downloads"
+    # else if Windows
+    else:
+        download_folder = f"{os.getenv('USERPROFILE')}\Downloads"
 
+    # create name for image
     prompt = data.prompt.replace(' ', '-')
     prompt = re.sub('[!,./+=?]+', '', prompt)
 
